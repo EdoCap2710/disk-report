@@ -1,6 +1,6 @@
 # Disk Report
 
-A small program written in Python that scans a given directory and shows its files and the filesystem status
+A small program written in Python that scans a given directory and shows its files and the filesystem status.
 
 ![Program Interface](assets/screenshot.png)
 

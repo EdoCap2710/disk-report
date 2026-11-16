@@ -153,7 +153,14 @@ def scan_directory(path, parent_id, level=0):
     dir_size = 0
     with os.scandir(path) as scan:
         for element in scan:
-            if element.is_file():
+            if element.is_symlink():
+                file_tree.insert(
+                    parent_id,
+                    "end",
+                    text=f"{element.name}",
+                    values=("Symlink",),
+                )
+            elif element.is_file():
                 file_size_mib = element.stat().st_size / (1024 ** 2)
                 dir_size = dir_size + element.stat().st_size
                 file_tree.insert(
@@ -168,11 +175,25 @@ def scan_directory(path, parent_id, level=0):
                     "end",
                     text=f"{element.name}",
                 )
-                dir_size = dir_size + scan_directory(
-                    element.path,
-                    dir_identifier,
-                    level + 1,
-                )
+                try:
+                    dir_size = dir_size + scan_directory(
+                        element.path,
+                        dir_identifier,
+                        level + 1,
+                    )
+                except PermissionError:
+                    file_tree.set(
+                        dir_identifier,
+                        "size",
+                        "Permission Err.",
+                    )
+                except OSError:
+                    file_tree.set(
+                        dir_identifier,
+                        "size",
+                        "Error",
+                    )
+
     file_tree.set(parent_id, "size", f"{(dir_size / (1024 ** 2)):.2f}")
     return dir_size
 
@@ -213,11 +234,23 @@ def choose_disk():
         file_tree.item(tree_identifier, text=f"{selected_path}")
         for children in file_tree.get_children(tree_identifier):
             file_tree.delete(children)
-        scan_directory(app_state['path'], tree_identifier)
+        try:
+            scan_directory(app_state['path'], tree_identifier)
+        except PermissionError:
+            file_tree.set(
+                tree_identifier,
+                "size",
+                "Permission Err.",
+            )
+        except OSError:
+            file_tree.set(
+                tree_identifier,
+                "size",
+                "Error",
+            )
 
 
 window.after(0, choose_disk)  # Makes choose_disk() start at launch
-
 
 # Creates the button that refreshes filesystem usage statistics
 update_button = ttk.Button(
