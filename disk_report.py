@@ -106,7 +106,7 @@ tree_identifier = file_tree.insert("", "end", text="")
 file_tree.configure(columns=("size",))
 file_tree.heading("#0", text="Path")
 file_tree.column("#0", width=600, minwidth=200, stretch=True)
-file_tree.heading("size", text="Size(MiB)")
+file_tree.heading("size", text="Size")
 file_tree.column(
     "size",
     anchor="e",
@@ -148,6 +148,19 @@ def disk_usage_report(path):
     return report
 
 
+# Formats a size in bytes as a human-readable string (B, KiB, MiB...)
+def format_size(size_bytes):
+    units = ["B", "KiB", "MiB", "GiB", "TiB"]
+    value = size_bytes
+    for unit in units:
+        if value < 1024 and unit == "B":
+            return f"{value} {unit}"
+        elif value < 1024:
+            return f"{value:.2f} {unit}"
+        value = value / 1024
+    return f"{value:.2f} PiB"
+
+
 # Populates the tree recursively and returns its total size in bytes
 def scan_directory(path, parent_id, level=0):
     dir_size = 0
@@ -161,13 +174,12 @@ def scan_directory(path, parent_id, level=0):
                     values=("Symlink",),
                 )
             elif element.is_file():
-                file_size_mib = element.stat().st_size / (1024 ** 2)
                 dir_size = dir_size + element.stat().st_size
                 file_tree.insert(
                     parent_id,
                     "end",
                     text=f"{element.name}",
-                    values=(f"{file_size_mib:.2f}",),
+                    values=(format_size(element.stat().st_size),),
                 )
             elif element.is_dir():
                 dir_identifier = file_tree.insert(
@@ -194,7 +206,7 @@ def scan_directory(path, parent_id, level=0):
                         "Error",
                     )
 
-    file_tree.set(parent_id, "size", f"{(dir_size / (1024 ** 2)):.2f}")
+    file_tree.set(parent_id, "size", format_size(dir_size))
     return dir_size
 
 
