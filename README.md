@@ -6,7 +6,7 @@ A small program written in Python that scans a given directory and shows its fil
 
 ## Features
 - Choose any directory through a folder picker
-- Browse its contents in an expandable tree, with the size of every file and folder in MiB
+- Browse its contents in an expandable tree, with the size of every file and folder in human-readable sizes
 - Folder sizes include everything inside their subfolders
 - See the total, used and free space of the filesystem, with a usage bar
 - Dark theme with teal accents
