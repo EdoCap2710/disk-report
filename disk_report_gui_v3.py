@@ -11,18 +11,20 @@ app_state = {
 # Creates the GUI window
 window = tk.Tk()
 window.title("Disk Report")
+window.geometry("900x600")
+window.minsize(600,400)
 
 # Creates the frame containig the functions buttons
 toolbar = ttk.Frame(window)
-toolbar.pack(fill = "x")
+toolbar.pack(fill = "x", padx = 5, pady = 5)
 
 # Creates the GUI label
 status_label = ttk.Label(window, text="Press to scan")
-status_label.pack()
+status_label.pack(pady = 5)
 
 # Creates the GUI bar
 usage_bar = ttk.Progressbar(window, orient = "horizontal", mode = "determinate", maximum = 100, value = 50, length = 280)
-usage_bar.pack()
+usage_bar.pack(fill = "x", padx = 10, pady = 5)
 
 # Creates the frame containing the GUI treeview
 tree_frame = ttk.Frame(window)
@@ -34,8 +36,9 @@ file_tree.pack(expand = True, fill = "both", side = "left")
 tree_identifier = file_tree.insert("", "end", text = "")
 file_tree.configure(columns = ("size",))
 file_tree.heading("#0", text = "Path")
+file_tree.column("#0", width = 600, minwidth = 200, stretch = True)
 file_tree.heading("size", text = "Size(MiB)")
-file_tree.column("size", anchor = "e")
+file_tree.column("size", anchor = "e", width = 140, minwidth = 100, stretch = False)
 
 # Creates a scrollbar for the filetree
 tree_scrollbar = ttk.Scrollbar(tree_frame, orient = "vertical", command = file_tree.yview)
