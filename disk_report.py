@@ -5,7 +5,10 @@ from tkinter import filedialog, ttk
 
 app_state = {
     "path": "/",
+    "sort_descending": False,
 }
+
+item_sizes = {}
 
 palette = {
     "background": "#111827",
@@ -174,13 +177,15 @@ def scan_directory(path, parent_id, level=0):
                     values=("Symlink",),
                 )
             elif element.is_file():
-                dir_size = dir_size + element.stat().st_size
-                file_tree.insert(
+                file_size = element.stat().st_size
+                dir_size = dir_size + file_size
+                file_identifier = file_tree.insert(
                     parent_id,
                     "end",
                     text=f"{element.name}",
-                    values=(format_size(element.stat().st_size),),
+                    values=(format_size(file_size),),
                 )
+                item_sizes[file_identifier] = file_size
             elif element.is_dir():
                 dir_identifier = file_tree.insert(
                     parent_id,
@@ -207,6 +212,7 @@ def scan_directory(path, parent_id, level=0):
                     )
 
     file_tree.set(parent_id, "size", format_size(dir_size))
+    item_sizes[parent_id] = dir_size
     return dir_size
 
 
@@ -246,6 +252,7 @@ def choose_disk():
         file_tree.item(tree_identifier, text=f"{selected_path}")
         for children in file_tree.get_children(tree_identifier):
             file_tree.delete(children)
+        item_sizes.clear()
         try:
             scan_directory(app_state['path'], tree_identifier)
         except PermissionError:
@@ -262,6 +269,25 @@ def choose_disk():
             )
 
 
+# Sorts the file tree in ascending or descending size
+def sort_tree(parent_id):
+    children = file_tree.get_children(parent_id)
+    sorted_children = sorted(
+        children,
+        key=lambda child: item_sizes.get(child, -1),
+        reverse=app_state["sort_descending"],
+    )
+    for position, child in enumerate(sorted_children):
+        file_tree.move(child, parent_id, position)
+        sort_tree(child)
+
+
+# Calls the sort_tree function every time the "size" column header is clicked
+def on_size_heading_click():
+    app_state["sort_descending"] = not app_state["sort_descending"]
+    sort_tree(tree_identifier)
+
+
 window.after(0, choose_disk)  # Makes choose_disk() start at launch
 
 # Creates the button that refreshes filesystem usage statistics
@@ -276,5 +302,8 @@ update_report()
 # Creates the button to choose the directory
 disk_button = ttk.Button(toolbar, text="Choose Disk", command=choose_disk)
 disk_button.pack(side="left", padx=5, expand=True, fill=tk.X)
+
+# Makes the size column react to the user click
+file_tree.heading("size", command=on_size_heading_click)
 
 window.mainloop()
