@@ -10,6 +10,7 @@ A small program written in Python that scans a given directory and shows its fil
 - Folder sizes include everything inside their subfolders
 - See the total, used and free space of the filesystem, with a usage bar
 - Dark theme with teal accents
+- Sort the tree by size
 
 ## Requirements
 - Python 3 (tested on 3.14) with Tkinter (Tk 8.6)
@@ -21,4 +22,4 @@ python disk_report.py
 
 ## Roadmap
 - Scan directories in the background so the window stays responsive
-- Sort the tree by name or size
+- Sort the tree by name
